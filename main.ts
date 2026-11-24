@@ -1,53 +1,53 @@
-// One-Star Review of Something Essential (make.fun): one deadpan
+// One-Star Review of Something Essential (make.fun): a deadpan
 // one-star review, at most 160 characters, of an everyday essential
-// everyone relies on. The program writes the review to
+// everyone relies on. This entry reviews ears: they pick up the
+// neighbour's television through two walls yet miss a name called
+// from the next room — the grievance is the ears' own backwards
+// priorities, filed deadpan with no winking and no exclamation.
+// The program writes the review to
 // /output/entry.txt.
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-//
-// The review is a ledger, not a rant: sleep takes eight hours every
-// night and hands back zero rest, so the reviewer files the only
-// verdict a review can give — false advertising. Sleep is the
-// sponsor's own example of an essential, the grievance is the one
-// every sleeper recognises (a full night that restores nothing),
-// and the sting lands in the last two words.
-const REVIEW =
-  "★☆☆☆☆ — Sleep: eight hours in, zero rest out. False advertising.";
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-const OUT_PATH = "/output/entry.txt";
-const MAX_CHARS = 160;
-const RATING_PREFIX = "★☆☆☆☆ — ";
+const ENTRY =
+  "★☆☆☆☆ — Ears: hear the neighbour's TV through two walls, but not my name from the next room.";
+const OUTPUT_FILE = "/output/entry.txt";
+const CHAR_LIMIT = 160;
 
-function countCodePoints(text: string): number {
-  return [...text].length;
+function lengthInChars(text: string): number {
+  return Array.from(text).length;
 }
 
-function assertGate(text: string): void {
-  const chars = countCodePoints(text);
-  if (chars < 1 || chars > MAX_CHARS) {
-    throw new Error(`review must be 1-${MAX_CHARS} characters, got ${chars}`);
+function checkEntry(text: string): void {
+  const chars = lengthInChars(text);
+  if (chars < 1 || chars > CHAR_LIMIT) {
+    throw new Error(`entry must be 1-${CHAR_LIMIT} characters, got ${chars}`);
   }
   if (text.trim().length === 0) {
-    throw new Error("review must not be only white space");
-  }
-  if (!text.startsWith(RATING_PREFIX)) {
-    throw new Error("review must open with the one-star rating");
+    throw new Error("entry must not be only white space");
   }
   if (/[\u0000-\u001f\u007f]/.test(text)) {
-    throw new Error("review must be a single line without control characters");
+    throw new Error("entry must be a single line without control characters");
+  }
+  if (!text.startsWith("★☆☆☆☆ — ")) {
+    throw new Error("entry must open with the one-star rating");
+  }
+  if (!text.endsWith(".")) {
+    throw new Error("entry must end with a full stop");
   }
 }
 
-function writeReview(): void {
-  assertGate(REVIEW);
+function main(): void {
+  checkEntry(ENTRY);
   mkdirSync("/output", { recursive: true });
-  writeFileSync(OUT_PATH, REVIEW, "utf8");
-  const back = readFileSync(OUT_PATH, "utf8");
-  if (back !== REVIEW) {
-    throw new Error("read-back mismatch: entry.txt differs from REVIEW");
+  writeFileSync(OUTPUT_FILE, ENTRY, { encoding: "utf8", mode: 0o644 });
+  chmodSync(OUTPUT_FILE, 0o644);
+  const back = readFileSync(OUTPUT_FILE, "utf8");
+  if (back !== ENTRY) {
+    throw new Error("read-back mismatch: entry.txt differs from ENTRY");
   }
   console.log(
-    `wrote ${OUT_PATH} (${countCodePoints(REVIEW)} chars, ${Buffer.byteLength(REVIEW, "utf8")} bytes)`,
+    `wrote ${OUTPUT_FILE}: ${lengthInChars(ENTRY)} chars, ${Buffer.byteLength(ENTRY, "utf8")} bytes, no trailing newline`,
   );
 }
 
-writeReview();
+main();
